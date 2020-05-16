@@ -159,6 +159,7 @@ helpers.buildCategoryBreadcrumbs = async function (cid) {
 			breadcrumbs.unshift({
 				text: String(data.name),
 				url: nconf.get('relative_path') + '/category/' + data.slug,
+				cid: cid,
 			});
 		}
 		cid = data.parentCid;
@@ -221,7 +222,7 @@ async function getCategoryData(cids, uid, selectedCid, states) {
 	if (selectedCid && !Array.isArray(selectedCid)) {
 		selectedCid = [selectedCid];
 	}
-
+	selectedCid = selectedCid && selectedCid.map(String);
 	states = states || [categories.watchStates.watching, categories.watchStates.notwatching];
 
 	const [allowed, watchState, categoryData, isAdmin] = await Promise.all([
@@ -285,7 +286,7 @@ function checkVisibleChildren(c, cidToAllowed, cidToWatchState, states) {
 	if (!c || !Array.isArray(c.children)) {
 		return false;
 	}
-	return c.children.some(c => c && (
+	return c.children.some(c => c && !c.disabled && (
 		(cidToAllowed[c.cid] && states.includes(cidToWatchState[c.cid])) || checkVisibleChildren(c, cidToAllowed, cidToWatchState, states)
 	));
 }
